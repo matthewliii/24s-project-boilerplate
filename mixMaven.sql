@@ -137,7 +137,7 @@ CREATE TABLE artistSong
     CONSTRAINT fk12
         FOREIGN KEY (MusicFileID) REFERENCES musicFile(MusicFIleID)
         ON UPDATE cascade ON DELETE RESTRICT
-)
+);
 
 CREATE TABLE userPreferences
 (
@@ -150,5 +150,60 @@ CREATE TABLE userPreferences
     CONSTRAINT fk14
         FOREIGN KEY (ArtistID) REFERENCES artist(ArtistID)
         ON UPDATE cascade ON DELETE RESTRICT
-)
+);
 
+
+INSERT INTO users
+    VALUES(3, 'John Smith', 'johnsmith@gmail.com', 'house');
+
+/* As a user, I want to be able to add and store new music. */
+INSERT INTO musicFile
+    VALUES(1, 'You are my sunshine', 'LeBonBon', 'happy', 1, 1, true, 3);
+
+INSERT INTO trackInfo
+    VALUES(1, 10, 1000000, 'happy', 100, 'You are my sunshine, You are my sunshine, You are my sunshine', 1);
+
+INSERT INTO playlist (PlaylistID, Name, Description)
+    VALUES(1, 'Johns Playlist', 'Johns favorite songs');
+
+INSERT INTO playlistSong
+    VALUES(1, 1, 1);
+
+/* As users, we want to be able to collaborate with other users to create playlists together. */
+INSERT INTO playlistOwnership
+    VALUES(1, 1);
+    VALUES(2, 1);
+
+INSERT INTO artist
+    VALUES(1, 'LeBonBon', 'happy');
+
+INSERT INTO artistSong
+    VALUES(1, 1);
+
+INSERT INTO userPreferences
+    VALUES(1, 'house', 1);
+
+
+
+/* As a user, I want to be able to sort my collection of music files by title, artist, genre, and BPM */
+/* Sort music files by title */
+SELECT * FROM MusicFile WHERE UserID = 3 ORDER BY Title;
+
+/* Sort music files by artist */
+SELECT * FROM MusicFile WHERE UserID = 3 ORDER BY Artist;
+
+/* Sort music files by genre */
+SELECT * FROM MusicFile WHERE UserID = 3 ORDER BY Genre;
+
+/* Sort music files by BPM */
+SELECT * FROM MusicFile WHERE UserID = 3 ORDER BY Tempo;
+
+/* As a user, I would like to be able to search and filter through his collection of music files. */
+/* Search music files by title */
+SELECT * FROM MusicFile WHERE UserID = 1 AND Title LIKE '%You are my sunshine%';
+
+/* Search music files by artist */
+SELECT * FROM MusicFile WHERE UserID = 1 AND Artist LIKE '%LeBonBon%';
+
+/* Search music files by genre */
+SELECT * FROM MusicFile WHERE UserID = 1 AND Genre LIKE '%Happy%';
