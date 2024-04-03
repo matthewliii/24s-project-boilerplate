@@ -262,23 +262,23 @@ INSERT INTO userPreferences
 
 /* As a user, I want to be able to sort my collection of music files by title, artist, genre, and BPM */
 /* Sort music files by title */
-SELECT * FROM MusicFile WHERE UserID = 3 ORDER BY Title;
+SELECT * FROM musicFile WHERE UserID = 3 ORDER BY Title;
 
 /* Sort music files by artist */
-SELECT * FROM MusicFile WHERE UserID = 3 ORDER BY Artist;
+SELECT * FROM musicFile WHERE UserID = 3 ORDER BY Artist;
 
 /* Sort music files by genre */
-SELECT * FROM MusicFile WHERE UserID = 3 ORDER BY Genre;
+SELECT * FROM musicFile WHERE UserID = 3 ORDER BY Genre;
 
 /* Sort music files by BPM */
-SELECT * FROM MusicFile WHERE UserID = 3 ORDER BY Tempo;
+SELECT * FROM musicFile WHERE UserID = 3 ORDER BY Tempo;
 
 /* As a user, I would like to be able to search and filter through his collection of music files. */
 /* Search music files by title */
-SELECT * FROM MusicFile WHERE UserID = 1 AND Title LIKE '%You are my sunshine%';
+SELECT * FROM musicFile WHERE UserID = 1 AND Title LIKE '%You are my sunshine%';
 
 /* Search music files by artist */
-SELECT * FROM MusicFile WHERE UserID = 1 AND Artist LIKE '%LeBonBon%';
+SELECT * FROM musicFile WHERE UserID = 1 AND Artist LIKE '%LeBonBon%';
 
 /* Search music files by genre */
-SELECT * FROM MusicFile WHERE UserID = 1 AND Genre LIKE '%Happy%';
+SELECT * FROM musicFile WHERE UserID = 1 AND Genre LIKE '%Happy%';
