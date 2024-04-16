@@ -151,7 +151,8 @@ CREATE TABLE userPreferences
         ON UPDATE cascade ON DELETE RESTRICT
 );
 
-INSERT INTO users (UserID, Name, Email) VALUES (1, 'John Doe', 'johndoe@example.com'),
+INSERT INTO users (UserID, Name, Email) VALUES
+    (1, 'John Doe', 'johndoe@example.com'),
     (2, 'Jane Smith', 'janesmith@example.com'),
     (3, 'Mike Johnson', 'mikejohnson@example.com'),
     (4, 'Emily Brown', 'emilybrown@example.com');
@@ -228,6 +229,32 @@ INSERT INTO userPreferences (MusicFileID, Genre, ArtistID) VALUES
 (3, 'Pop', 1),
 (4, 'Rock', 2);
 
+
+/* User 2 */
+
+/* As a user, I want to be able to create sets from different playlists and gain inspiration to spice up my own sets using the different storage organization methods */
+INSERT INTO playlistSong (OrderNum, MusicFileID, PlaylistID)
+VALUES ('6', '14','61');
+
+/* As a user, I want to be able to properly have my music as an artist represented for my songs */
+INSERT INTO Artist
+VALUES('33', 'Dante Mirage', 'House');
+
+INSERT INTO musicFile (Title, Artist, Genre, `Key`, Tempo, ReleaseStatus, UserID) VALUES
+('Darude Sandstorms', 'Dante Mirage', 'House', 1, 120, TRUE, 1);
+
+/* As a user, I want a software that can be used quickly during live sets to search for music I have already cataloged as well as new music that the crowd may like that comes to mind during the set or they ask for. This way I can cater to the crowd effectively day in and day out. */
+SELECT p.Name AS PlaylistName, mf.Title AS TrackTitle
+FROM Playlist p
+JOIN playlistSong pls ON p.PlaylistID = pls.PlaylistID
+JOIN musicFile mf on pls.MusicFileID = mf.MusicFileID;
+
+/* As a user, I want to be able to add the trendy songs that are the most popular into my own catalog in order to implement them into my sets every week without having to take out too much time 2.2 */
+SELECT c.name AS ChartName, c.Description AS ChartDescription, p.Name AS PlaylistName
+FROM Charts c
+JOIN Playlist p ON p.PlaylistID = c.ChartID;
+
+/* User 3*/
 INSERT INTO users
     VALUES(3, 'John Smith', 'johnsmith@gmail.com', 'house');
 
