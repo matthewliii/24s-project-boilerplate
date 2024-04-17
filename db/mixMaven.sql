@@ -309,3 +309,5 @@ SELECT * FROM musicFile WHERE UserID = 1 AND Artist LIKE '%LeBonBon%';
 
 /* Search music files by genre */
 SELECT * FROM musicFile WHERE UserID = 1 AND Genre LIKE '%Happy%';
+
+SELECT * FROM musicFile WHERE UserID = 1 AND `Key` = 1;
