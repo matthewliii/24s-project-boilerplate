@@ -101,4 +101,50 @@ def get_musicFiles_Key(Key):
     the_response.mimetype = 'application/json'
     return the_response
 
+# Update generic info of music file uploaded by a specific user
+@musicFile.route('/musicFile/<userID>/<MusicFileID>', methods=['PUT'])
+def update_musicFile_info():
     
+    # collecting data from the request object 
+    the_data = request.json
+    current_app.logger.info(the_data)
+
+    #extracting the variable
+    id = the_data['MusicFileId']
+    title = the_data['Title']
+    artist = the_data['Artist']
+    genre = the_data['Genre']
+    key = the_data['Key']
+    tempo = the_data['Tempo']
+    release_status = the_data['ReleaseStatus']
+    
+
+    # Constructing the query
+    query = 'update musicFile set title = "'
+    query += title  + '", artist = "'
+    query += artist + '", genre = "'
+    query += genre + '", key = "' 
+    query += key + '", tempo = "'
+    query += tempo + '", releasestatus = "'
+    query += release_status + '" where id = "' + str(id) + '";'
+    current_app.logger.info(query)
+
+    # executing and committing the insert statement 
+    cursor = db.get_db().cursor()
+    cursor.execute(query)
+    db.get_db().commit()
+    
+    return 'Success!'
+
+# deletes music file uploaded by userID
+@musicFile.route('/musicFile/<userID>/<MusicFileID>', methods=['DELETE'])
+def delete_musicFile(userID, musicFileID):
+    query = 'DELETE FROM musicFile WHERE userID = ' + str(userID) + ' AND musicFileID = ' + str(musicFileID)
+
+    current_app.logger.info(query)
+
+    cursor = db.get_db().cursor()
+    cursor.execute(query)
+    db.get_db().commit()
+
+    return 'Music File {} deleted successfully!'.format(musicFileID)
