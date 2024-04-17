@@ -9,9 +9,29 @@ from src import db
 
 musicFile = Blueprint('musicFile', __name__)
 
+# Return a song with MusicFileID
+@musicFile.route('/musicFile/<musicFileID>', methods=['GET'])
+def get_musicFile(musicFileID):
+    cursor = db.get_db().cursor()
+    cursor.execute('select * from musicFile where musicFileID = {0}'.format(musicFileID))
+    row_headers = [x[0] for x in cursor.description]
+    json_data = []
+    theData = cursor.fetchall()
+    for row in theData:
+        row = (dict(zip(row_headers, row)))
+        for key, value in row.items():
+            if isinstance(value, bytes):
+                row[key] = value.decode('utf-8')
+        json_data.append(row)
+
+    the_response = make_response(jsonify(json_data))
+    the_response.status_code = 200
+    the_response.mimetype = 'application/json'
+    return the_response
+
 # Get all music files uploaded by a user with a specific musicFileID from the DB
 @musicFile.route('/musicFile/<userID>/<MusicFileID>', methods=['GET'])
-def get_musicFile(userID, MusicFileID):
+def get_musicFile_of_UserID(userID, MusicFileID):
     cursor = db.get_db().cursor()
     cursor.execute('select * from musicFile where UserID = ' + userID + ' and MusicFileID = ' + MusicFileID)
     row_headers = [x[0] for x in cursor.description]
