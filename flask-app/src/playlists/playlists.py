@@ -16,26 +16,11 @@ def create_playlist():
 # collecting data from the request object
     data = request.get_json()
     cursor = db.get_db().cursor()
+
     query = "INSERT INTO playlist (PlaylistID, Name, Description, CreationDate) VALUES (%s, %s, %s, %s, %s)"
     cursor.execute(query, (data['PlaylistID'], data['Name'], data['Description'], data['CreationDate']))
     db.get_db().commit()
     return make_response(jsonify({"message": "Playlist created!"}))
-
-################ /playlist/{userID} endpoint ################
-# Get all playlists created by a user with a specific userID
-@playlist.route('/playlist/<userID>', methods=['GET'])
-def get_playlists_by_user(userID):
-    cursor = db.get_db().cursor()
-    cursor.execute('select * from playlist p join playlistOwnership po on p.PlaylistID = po.PlaylistID where UserID = ' + userID)
-    row_headers = [x[0] for x in cursor.description]
-    json_data = []
-    theData = cursor.fetchall()
-    for row in theData:
-        json_data.append(dict(zip(row_headers, row)))
-    the_response = make_response(jsonify(json_data))
-    the_response.status_code = 200
-    the_response.mimetype = 'application/json'
-    return the_response
 
 ################ /playlist/{playlistID} endpoint ################
 # Get a playlist with a specific playlistID and songs in it
@@ -97,11 +82,50 @@ def delete_playlist(playlistID):
 
     return 'Playlist {} deleted successfully!'.format(playlistID)
 
+################ /playlist/{userID} endpoint ################
+# Get all playlists created by a user with a specific userID
+@playlist.route('/playlist/<userID>', methods=['GET'])
+def get_playlists_by_user(userID):
+    cursor = db.get_db().cursor()
+    cursor.execute('select * from playlist p join playlistOwnership po on p.PlaylistID = po.PlaylistID where UserID = ' + userID)
+    row_headers = [x[0] for x in cursor.description]
+    json_data = []
+    theData = cursor.fetchall()
+    for row in theData:
+        json_data.append(dict(zip(row_headers, row)))
+    the_response = make_response(jsonify(json_data))
+    the_response.status_code = 200
+    the_response.mimetype = 'application/json'
+    return the_response
+
+################ /playlist/{chartID} endpoint ################
+# Get the playlist associated with trending charts of ChartID
+@playlist.route('/playlist/<chartID>', methods=['GET'])
+def playlist_chart(chartID):
+    try:
+        cursor = db.get_db().cursor()
+        cursor.execute('''
+            SELECT c.chartID, c.name, c.description
+            FROM Chart c
+            JOIN playlistCharts AS pc ON c.chartID = pc.chartID
+            WHERE om.orderID = %s
+        ''', (chartID,))
+        charts = cursor.fetchall()
+
+        if not charts:
+            return 'No chart found for this playlist.', 404
+
+        charts_data = [{'chartID': chart[0], 'name': chart[1], 'description': chart[2]} for chart in charts]
+
+        return jsonify(charts_data), 200
+    except Exception as e:
+        current_app.logger.error(str(e))
+        return jsonify({'error': 'Failed to retrieve playlist for chart.'}), 500
 
 ################ /playlist_musicFile endpoint ################
-# Get a song with a specific playlistID
-@playlist.route('/playlist/<playlistID>/<musicFileID>', methods=['GET'])
-def get_musicfile_in_playlist(playlistID):
+# Get a playlist with a specific playlistID and songs in it
+@playlist.route('/playlist/<playlistID>/{MusicFileID}', methods=['GET'])
+def get_playlist(playlistID):
     cursor = db.get_db().cursor()
     cursor.execute(f'''
 select p.PlaylistID, Name, Description, CreationDate, OrderNum, mf.MusicFileID,
@@ -118,8 +142,6 @@ join musicFile mf on pS.MusicFileID = mf.MusicFileID where p.PlaylistID = {str(p
     the_response.status_code = 200
     the_response.mimetype = 'application/json'
     return the_response
-
-
 
 # Get all music files uploaded by a user and a filter key from the DB
 @musicFile.route('/musicFileKey/<userID>/<Key>', methods=['GET'])
