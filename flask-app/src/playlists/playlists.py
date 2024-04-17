@@ -104,11 +104,11 @@ def delete_playlist(playlistID):
 def get_musicfile_in_playlist(playlistID):
     cursor = db.get_db().cursor()
     cursor.execute(f'''
-# select p.PlaylistID, Name, Description, CreationDate, OrderNum, mf.MusicFileID,
-# Title, Artist, Genre, `Key`, Tempo, ReleaseStatus, UserID
-# from playlist p join playlistSong pS on p.PlaylistID = pS.PlaylistID
-# join musicFile mf on pS.MusicFileID = mf.MusicFileID where p.PlaylistID = {str(playlistID)}
-#                    ''')
+select p.PlaylistID, Name, Description, CreationDate, OrderNum, mf.MusicFileID,
+Title, Artist, Genre, `Key`, Tempo, ReleaseStatus, UserID
+from playlist p join playlistSong pS on p.PlaylistID = pS.PlaylistID
+join musicFile mf on pS.MusicFileID = mf.MusicFileID where p.PlaylistID = {str(playlistID)}
+                   ''')
     row_headers = [x[0] for x in cursor.description]
     json_data = []
     theData = cursor.fetchall()
@@ -135,5 +135,6 @@ def get_musicFilesKey(userID, Key):
     the_response.status_code = 200
     the_response.mimetype = 'application/json'
     return the_response
+
 
 
