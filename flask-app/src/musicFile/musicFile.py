@@ -44,6 +44,18 @@ def get_musicFile_of_UserID(userID, MusicFileID):
     the_response.mimetype = 'application/json'
     return the_response
 
+# Create a new musicFile corresponding with a new music file ID and corresponding with a userID
+@musicFile.route('/musicFile/<userID>/<MusicFileID>', methods=['POST'])
+def create_musicFile(userID, MusicFileID):
+# collecting data from the request object
+    data = request.get_json()
+    cursor = db.get_db().cursor()
+
+    query = "INSERT INTO musicFile (MusicFileID, Title, Artist, Genre, `Key`, Tempo, ReleaseStatus, UserID) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+    cursor.execute(query, (MusicFileID, data['Title'], data['Artist'], data['Genre'], data['`Key`'], data['Tempo'], data['ReleaseStatus'], userID))
+    db.get_db().commit()
+    return make_response(jsonify({"message": "MusicFile created!"}))
+
 # Get all music files uploaded by a user from the DB
 @musicFile.route('/musicFile/<userID>', methods=['GET'])
 def get_musicFiles(userID):
@@ -61,7 +73,7 @@ def get_musicFiles(userID):
 
 # Get all music files uploaded by a user and a filter key from the DB
 @musicFile.route('/musicFileKey/<userID>/<Key>', methods=['GET'])
-def get_musicFilesKey(userID, Key):
+def get_musicFiles_User_Key(userID, Key):
     cursor = db.get_db().cursor()
     cursor.execute('select * from musicFile where UserID = ' + userID + ' and `Key` = ' + Key)
     row_headers = [x[0] for x in cursor.description]
@@ -73,3 +85,20 @@ def get_musicFilesKey(userID, Key):
     the_response.status_code = 200
     the_response.mimetype = 'application/json'
     return the_response
+
+# Get all music files with a filter key from the DB
+@musicFile.route('/musicFileKey/<Key>', methods=['GET'])
+def get_musicFiles_Key(Key):
+    cursor = db.get_db().cursor()
+    cursor.execute('select * from musicFile where `Key` = ' + Key)
+    row_headers = [x[0] for x in cursor.description]
+    json_data = []
+    theData = cursor.fetchall()
+    for row in theData:
+        json_data.append(dict(zip(row_headers, row)))
+    the_response = make_response(jsonify(json_data))
+    the_response.status_code = 200
+    the_response.mimetype = 'application/json'
+    return the_response
+
+    

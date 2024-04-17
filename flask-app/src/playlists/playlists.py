@@ -124,8 +124,8 @@ def playlist_chart(chartID):
 
 ################ /playlist_musicFile endpoint ################
 # Get a playlist with a specific playlistID and songs in it
-@playlist.route('/playlist/<playlistID>/{MusicFileID}', methods=['GET'])
-def get_playlist(playlistID):
+@playlist.route('/playlist/<playlistID>/<MusicFileID>', methods=['GET'])
+def get_playlist_playlistID_musicFileID(playlistID):
     cursor = db.get_db().cursor()
     cursor.execute(f'''
 select p.PlaylistID, Name, Description, CreationDate, OrderNum, mf.MusicFileID,
@@ -143,20 +143,7 @@ join musicFile mf on pS.MusicFileID = mf.MusicFileID where p.PlaylistID = {str(p
     the_response.mimetype = 'application/json'
     return the_response
 
-# Get all music files uploaded by a user and a filter key from the DB
-@musicFile.route('/musicFileKey/<userID>/<Key>', methods=['GET'])
-def get_musicFilesKey(userID, Key):
-    cursor = db.get_db().cursor()
-    cursor.execute('select * from musicFile where UserID = ' + userID + ' and `Key` = ' + Key)
-    row_headers = [x[0] for x in cursor.description]
-    json_data = []
-    theData = cursor.fetchall()
-    for row in theData:
-        json_data.append(dict(zip(row_headers, row)))
-    the_response = make_response(jsonify(json_data))
-    the_response.status_code = 200
-    the_response.mimetype = 'application/json'
-    return the_response
+
 
 
 
