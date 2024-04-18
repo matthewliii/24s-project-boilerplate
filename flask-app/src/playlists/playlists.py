@@ -108,7 +108,7 @@ def playlist_chart(chartID):
             SELECT c.chartID, c.name, c.description
             FROM Chart c
             JOIN playlistCharts AS pc ON c.chartID = pc.chartID
-            WHERE om.orderID = %s
+            WHERE pc.chartID = %s
         ''', (chartID,))
         charts = cursor.fetchall()
 
@@ -122,16 +122,37 @@ def playlist_chart(chartID):
         current_app.logger.error(str(e))
         return jsonify({'error': 'Failed to retrieve playlist for chart.'}), 500
 
-################ /playlist_musicFile endpoint ################
-# Get a playlist with a specific playlistID and songs in it
-@playlist.route('/playlist/<playlistID>/<MusicFileID>', methods=['GET'])
-def get_playlist_playlistID_musicFileID(playlistID):
+################ /playlist/{sessionID} endpoint ################
+# Get the session of SessionID
+@playlist.route('/playlist/<SessionID>', methods=['GET'])
+def get_session(sessionID):
+    cursor = db.get_db().cursor()
+    cursor.execute('select * from sessions where sessionID = {0}'.format(sessionID))
+    row_headers = [x[0] for x in cursor.description]
+    json_data = []
+    theData = cursor.fetchall()
+    for row in theData:
+        row = (dict(zip(row_headers, row)))
+        for key, value in row.items():
+            if isinstance(value, bytes):
+                row[key] = value.decode('utf-8')
+        json_data.append(row)
+
+    the_response = make_response(jsonify(json_data))
+    the_response.status_code = 200
+    the_response.mimetype = 'application/json'
+    return the_response
+
+################ /playlist/{playlistID}/{musicFile} endpoint ################
+# Get a song with id MusicFileID that is in a playlist with a specific playlistID
+@playlist.route('/playlist/<playlistID>/<musicFileID>', methods=['GET'])
+def get_song_from_playlist(playlistID, musicFileID):
     cursor = db.get_db().cursor()
     cursor.execute(f'''
-select p.PlaylistID, Name, Description, CreationDate, OrderNum, mf.MusicFileID,
-Title, Artist, Genre, `Key`, Tempo, ReleaseStatus, UserID
-from playlist p join playlistSong pS on p.PlaylistID = pS.PlaylistID
-join musicFile mf on pS.MusicFileID = mf.MusicFileID where p.PlaylistID = {str(playlistID)}
+SELECT mF.MusicFileID, title, artist, genre, `key`, tempo, ReleaseStatus, userid
+FROM playlist p join playlistSong pS on p.PlaylistID = pS.PlaylistID
+    join musicFile mF on pS.MusicFileID = mF.MusicFileID
+WHERE p.PlaylistID = {str(playlistID)} AND mF.MusicFileID = {str(musicFileID)}
                    ''')
     row_headers = [x[0] for x in cursor.description]
     json_data = []
@@ -143,7 +164,54 @@ join musicFile mf on pS.MusicFileID = mf.MusicFileID where p.PlaylistID = {str(p
     the_response.mimetype = 'application/json'
     return the_response
 
+# Add new song with musicFileID to playlist with PlaylistID
+@playlist.route('/playlist/<playlistID>/<musicFileID>', methods=['POST'])
+def add_song_to_playlist():
+# collecting data from the request object
+    data = request.get_json()
+    cursor = db.get_db().cursor()
+
+    query = "INSERT INTO playlistSong (OrderNum, MusicFileID, PlaylistID) VALUES (%s, %s, %s, %s)"
+    cursor.execute(query, (data['OrderNum'], data['MusicFileID'], data['PlaylistID']))
+    db.get_db().commit()
+    return make_response(jsonify({"message": "Song added!"}))
+
+# Deletes song with MusicFileID from playlist with PlaylistID
+@playlist.route('/playlist/<playlistID>/<musicFileID>', methods=['DELETE'])
+def delete_song_from_playlist(playlistID, musicFileID):
+    query = f'DELETE FROM playlistSong WHERE playlistID = "{playlistID}" AND musicFileID = "{musicFileID}"'
+
+    current_app.logger.info(query)
+
+    cursor = db.get_db().cursor()
+    cursor.execute(query)
+    db.get_db().commit()
+
+    return f'Song {musicFileID} removed successfully from Playlist {playlistID}!'
 
 
+################ /playlist/{userID}/{playlistID} endpoint ################
+# Add collaborator with UserID from playlist with PlaylistID
+@playlist.route('/playlist/<userID>/<playlistID>', methods=['POST'])
+def update_collaborators():
+    # collecting data from the request object
+    data = request.get_json()
+    cursor = db.get_db().cursor()
 
+    query = "INSERT INTO playlistOwnership (UserID, PlaylistID) VALUES (%s, %s, %s)"
+    cursor.execute(query, (data['UserID'], data['PlaylistID']))
+    db.get_db().commit()
+    return make_response(jsonify({"message": "Collaborator added!"}))
 
+# Deletes collaborator with UserID from playlist with PlaylistID
+@playlist.route('/playlist/<playlistID>/<musicFileID>', methods=['DELETE'])
+def remove_collaborators(userID, playlistID):
+    query = f'DELETE FROM playlistOwnership WHERE playlistID = "{playlistID}" AND userID = "{userID}"'
+
+    current_app.logger.info(query)
+
+    cursor = db.get_db().cursor()
+    cursor.execute(query)
+    db.get_db().commit()
+
+    return f'User {userID} removed as a collaborator from Playlist {playlistID}!'
