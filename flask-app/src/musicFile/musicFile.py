@@ -105,7 +105,7 @@ def get_musicFiles_Key(Key):
 @musicFile.route('/all_musicFiles', methods=['GET'])
 def get_all_musicFiles():
     cursor = db.get_db().cursor()
-    cursor.execute('select * from musicFile')
+    cursor.execute('select Title, Artist, Genre, `Key`, Tempo from musicFile')
     row_headers = [x[0] for x in cursor.description]
     json_data = []
     theData = cursor.fetchall()
@@ -163,3 +163,19 @@ def delete_musicFile(userID, musicFileID):
     db.get_db().commit()
 
     return 'Music File {} deleted successfully!'.format(musicFileID)
+
+# Get music files sorted by column
+@musicFile.route('/musicFileFilterBy/<input>', methods=['GET'])
+def get_musicFiles_Columm(input):
+    cursor = db.get_db().cursor()
+    cursor.execute('select Title, Artist, Genre, `Key`, Tempo from musicFile ORDER BY ' + input)
+    #cursor.execute('select Title, Artist, Genre, `Key`, Tempo from musicFile ORDER BY Tempo')
+    row_headers = [x[0] for x in cursor.description]
+    json_data = []
+    theData = cursor.fetchall()
+    for row in theData:
+        json_data.append(dict(zip(row_headers, row)))
+    the_response = make_response(jsonify(json_data))
+    the_response.status_code = 200
+    the_response.mimetype = 'application/json'
+    return the_response
