@@ -57,10 +57,10 @@ def create_musicFile(userID, MusicFileID):
     return make_response(jsonify({"message": "MusicFile created!"}))
 
 # Get all music files uploaded by a user from the DB
-@musicFile.route('/musicFile/<userID>', methods=['GET'])
+@musicFile.route('/musicFiles/<userID>', methods=['GET'])
 def get_musicFiles(userID):
     cursor = db.get_db().cursor()
-    cursor.execute('select * from musicFile where UserID = ' + userID)
+    cursor.execute('select Title, Artist, Genre, `Key`, Tempo from musicFile where UserID = ' + str(userID))
     row_headers = [x[0] for x in cursor.description]
     json_data = []
     theData = cursor.fetchall()
@@ -153,8 +153,8 @@ def update_musicFile_info():
 
 # deletes music file uploaded by userID
 @musicFile.route('/musicFile/<userID>/<MusicFileID>', methods=['DELETE'])
-def delete_musicFile(userID, musicFileID):
-    query = 'DELETE FROM musicFile WHERE userID = ' + str(userID) + ' AND musicFileID = ' + str(musicFileID)
+def delete_musicFile(userID, MusicFileID):
+    query = 'DELETE FROM musicFile WHERE userID = ' + str(userID) + ' AND musicFileID = ' + str(MusicFileID)
 
     current_app.logger.info(query)
 
@@ -162,7 +162,22 @@ def delete_musicFile(userID, musicFileID):
     cursor.execute(query)
     db.get_db().commit()
 
-    return 'Music File {} deleted successfully!'.format(musicFileID)
+    return 'Music File {} deleted successfully!'.format(MusicFileID)
+
+# Adds music file uploaded by userID
+# (Title, Artist, Genre, `Key`, Tempo, ReleaseStatus, UserID)
+@musicFile.route('/musicFile/<Title>/<Artist>/<Genre>/<Key>/<Tempo>/<Release>/<userID>', methods=['PUT'])
+def add_musicFile(Title, Artist, Genre, Key, Tempo, Release, userID):
+    query = 'insert into musicFile (Title, Artist, Genre, `Key`, Tempo, ReleaseStatus, UserID)\
+        values (' + Title + ', ' + Artist + ', ' + Genre + ', ' + str(Key) + ', ' + str(Tempo) + ', ' + str(Release) + ', ' + str(userID) + ')'
+
+    current_app.logger.info(query)
+
+    cursor = db.get_db().cursor()
+    cursor.execute(query)
+    db.get_db().commit()
+
+    return 'Music File {} added successfully!'.format(userID)
 
 # Get music files sorted by column
 @musicFile.route('/musicFileFilterBy/<input>', methods=['GET'])
@@ -171,6 +186,28 @@ def get_musicFiles_Columm(input):
     cursor.execute('select Title, Artist, Genre, `Key`, Tempo from musicFile ORDER BY ' + input)
     #cursor.execute('select Title, Artist, Genre, `Key`, Tempo from musicFile ORDER BY Tempo')
     row_headers = [x[0] for x in cursor.description]
+    json_data = []
+    theData = cursor.fetchall()
+    for row in theData:
+        json_data.append(dict(zip(row_headers, row)))
+    the_response = make_response(jsonify(json_data))
+    the_response.status_code = 200
+    the_response.mimetype = 'application/json'
+    return the_response
+
+# Get music file by title
+@musicFile.route('/musicFileByTitle', methods=['GET'])
+def get_musicFileByTitle():
+    # collecting data from the request object 
+    the_data = request.json
+    current_app.logger.info(the_data)
+
+    title = the_data['Title']
+    cursor = db.get_db().cursor()
+    cursor.execute('select Title, Artist, Genre, `Key`, Tempo from musicFile WHERE Title = ' + title)
+    row_headers = [x[0] for x in cursor.description]
+
+
     json_data = []
     theData = cursor.fetchall()
     for row in theData:
