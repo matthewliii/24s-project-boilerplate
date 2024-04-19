@@ -4,11 +4,7 @@ Our project aims to simplify and organize the large amounts of music files that 
 
 # Team Members:
 
-Cody Chan
-Chris Le
-Brighton Le
-Matthew Li
-Justin Wee
+Cody Chan, Chris Le, Brighton Le, Matthew Li, Justin Wee
 
 ## How to setup and start the containers
 
