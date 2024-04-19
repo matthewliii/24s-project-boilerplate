@@ -284,7 +284,7 @@ def get_users():
 @playlist.route('/playlist_charts', methods=['GET'])
 def get_playlist_charts():
     cursor = db.get_db().cursor()
-    cursor.execute(f'''SELECT p.PlaylistID, p.name, p.description, c.name, c.description, c.creationDate, c.ChartID
+    cursor.execute(f'''SELECT p.PlaylistID, p.description, c.name, c.description, c.creationDate, c.ChartID
                    FROM playlist p JOIN playlistCharts pc ON p.PlaylistID = pc.PlaylistID
                    JOIN charts c ON c.ChartID = pc.ChartID''')
     row_headers = [x[0] for x in cursor.description]
@@ -300,7 +300,7 @@ def get_playlist_charts():
 ################ /playlist/{userID}/{playlistID} endpoint ################
 # Add collaborator with UserID from playlist with PlaylistID
 @playlist.route('/chartAddPlaylist', methods=['POST'])
-def add_collaborators():
+def add_playlist_chart():
     # collecting data from the request object 
     the_data = request.json
     current_app.logger.info(the_data)
