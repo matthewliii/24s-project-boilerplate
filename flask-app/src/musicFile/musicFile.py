@@ -45,7 +45,7 @@ def get_musicFile_of_UserID(userID, MusicFileID):
     return the_response
 
 # Create a new musicFile corresponding with a new music file ID and corresponding with a userID
-@musicFile.route('/musicFile/<userID>/<MusicFileID>', methods=['POST'])
+@musicFile.route('/musicFile/<userID>/<MusicFileID>', methods=['PUT'])
 def create_musicFile(userID, MusicFileID):
 # collecting data from the request object
     data = request.get_json()
