@@ -278,3 +278,44 @@ def get_users():
     the_response.status_code = 200
     the_response.mimetype = 'application/json'
     return the_response
+
+################ /charts endpoint ################
+# Get a playlist with a specific playlistID and songs in it
+@playlist.route('/playlist_charts', methods=['GET'])
+def get_playlist_charts():
+    cursor = db.get_db().cursor()
+    cursor.execute(f'''SELECT p.PlaylistID, p.name, p.description, c.name, c.description, c.creationDate, c.ChartID
+                   FROM playlist p JOIN playlistCharts pc ON p.PlaylistID = pc.PlaylistID
+                   JOIN charts c ON c.ChartID = pc.ChartID''')
+    row_headers = [x[0] for x in cursor.description]
+    json_data = []
+    theData = cursor.fetchall()
+    for row in theData:
+        json_data.append(dict(zip(row_headers, row)))
+    the_response = make_response(jsonify(json_data))
+    the_response.status_code = 200
+    the_response.mimetype = 'application/json'
+    return the_response
+
+################ /playlist/{userID}/{playlistID} endpoint ################
+# Add collaborator with UserID from playlist with PlaylistID
+@playlist.route('/chartAddPlaylist', methods=['POST'])
+def add_collaborators():
+    # collecting data from the request object 
+    the_data = request.json
+    current_app.logger.info(the_data)
+
+    #extracting the variable
+    PlaylistID = the_data['PlaylistID']
+    ChartID = the_data['ChartID']
+
+    # Constructing the query
+    query = "insert into playlistCharts (UserID, PlaylistID) VALUES ('" + str(ChartID) + "', '" + str(PlaylistID) + "')" 
+    current_app.logger.info(query)
+
+    # executing and committing the insert statement 
+    cursor = db.get_db().cursor()
+    cursor.execute(query)
+    db.get_db().commit()
+    
+    return make_response(jsonify({"message": "PlaylistAddede added!"}))
