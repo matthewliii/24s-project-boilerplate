@@ -84,7 +84,7 @@ def delete_playlist(playlistID):
 
 ################ /playlist/{userID} endpoint ################
 # Get all playlists created by a user with a specific userID
-@playlist.route('/playlist/<userID>', methods=['GET'])
+@playlist.route('/playlistUser/<userID>', methods=['GET'])
 def get_playlists_by_user(userID):
     cursor = db.get_db().cursor()
     cursor.execute('select * from playlist p join playlistOwnership po on p.PlaylistID = po.PlaylistID where UserID = ' + userID)
@@ -100,7 +100,7 @@ def get_playlists_by_user(userID):
 
 ################ /playlist/{chartID} endpoint ################
 # Get the playlist associated with trending charts of ChartID
-@playlist.route('/playlist/<chartID>', methods=['GET'])
+@playlist.route('/playlistChart/<chartID>', methods=['GET'])
 def playlist_chart(chartID):
     try:
         cursor = db.get_db().cursor()
@@ -124,7 +124,7 @@ def playlist_chart(chartID):
 
 ################ /playlist/{sessionID} endpoint ################
 # Get the session of SessionID
-@playlist.route('/playlist/<SessionID>', methods=['GET'])
+@playlist.route('/playlistSession/<SessionID>', methods=['GET'])
 def get_session(sessionID):
     cursor = db.get_db().cursor()
     cursor.execute('select * from sessions where sessionID = {0}'.format(sessionID))
@@ -192,15 +192,25 @@ def delete_song_from_playlist(playlistID, musicFileID):
 
 ################ /playlist/{userID}/{playlistID} endpoint ################
 # Add collaborator with UserID from playlist with PlaylistID
-@playlist.route('/playlist/<userID>/<playlistID>', methods=['POST'])
-def update_collaborators():
-    # collecting data from the request object
-    data = request.get_json()
-    cursor = db.get_db().cursor()
+@playlist.route('/playlistAddCollab', methods=['POST'])
+def add_collaborators():
+    # collecting data from the request object 
+    the_data = request.json
+    current_app.logger.info(the_data)
 
-    query = "INSERT INTO playlistOwnership (UserID, PlaylistID) VALUES (%s, %s, %s)"
-    cursor.execute(query, (data['UserID'], data['PlaylistID']))
+    #extracting the variable
+    PlaylistID = the_data['PlaylistID']
+    UserID = the_data['UserID']
+
+    # Constructing the query
+    query = "insert into playlistOwnership (UserID, PlaylistID) VALUES ('" + str(UserID) + "', '" + str(PlaylistID) + "')" 
+    current_app.logger.info(query)
+
+    # executing and committing the insert statement 
+    cursor = db.get_db().cursor()
+    cursor.execute(query)
     db.get_db().commit()
+    
     return make_response(jsonify({"message": "Collaborator added!"}))
 
 # Deletes collaborator with UserID from playlist with PlaylistID
@@ -215,3 +225,56 @@ def remove_collaborators(userID, playlistID):
     db.get_db().commit()
 
     return f'User {userID} removed as a collaborator from Playlist {playlistID}!'
+
+# Get all playlists and songs in it
+@playlist.route('/playlist', methods=['GET'])
+def get_playlists():
+    cursor = db.get_db().cursor()
+    cursor.execute(f'''
+select * from playlist join playlistOwnership pO on playlist.PlaylistID = pO.PlaylistID join users u on pO.UserID = u.UserID
+                   ''')
+    row_headers = [x[0] for x in cursor.description]
+    json_data = []
+    theData = cursor.fetchall()
+    for row in theData:
+        json_data.append(dict(zip(row_headers, row)))
+    the_response = make_response(jsonify(json_data))
+    the_response.status_code = 200
+    the_response.mimetype = 'application/json'
+    return the_response
+
+@playlist.route('/user', methods=['GET'])
+def get_user():
+
+    the_data = request.json
+    current_app.logger.info(the_data)
+
+    #extracting the variable
+    UserID = the_data['UserID']
+
+    cursor = db.get_db().cursor()
+    cursor.execute("select UserID, FullName From users where UserID = '" + str(UserID) + "'")
+    row_headers = [x[0] for x in cursor.description]
+    json_data = []
+    theData = cursor.fetchall()
+    for row in theData:
+        json_data.append(dict(zip(row_headers, row)))
+    the_response = make_response(jsonify(json_data))
+    the_response.status_code = 200
+    the_response.mimetype = 'application/json'
+    return the_response
+
+@playlist.route('/users', methods=['GET'])
+def get_users():
+
+    cursor = db.get_db().cursor()
+    cursor.execute("select UserID, FullName From users")
+    row_headers = [x[0] for x in cursor.description]
+    json_data = []
+    theData = cursor.fetchall()
+    for row in theData:
+        json_data.append(dict(zip(row_headers, row)))
+    the_response = make_response(jsonify(json_data))
+    the_response.status_code = 200
+    the_response.mimetype = 'application/json'
+    return the_response

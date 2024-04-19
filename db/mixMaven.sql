@@ -5,7 +5,7 @@ USE mixMaven;
 CREATE TABLE users
 (
     UserID int AUTO_INCREMENT,
-    Name varchar(50) NOT NULL,
+    FullName varchar(50) NOT NULL,
     Email varchar (75) UNIQUE NOT NULL,
     PRIMARY KEY (UserID)
 );
@@ -151,7 +151,7 @@ CREATE TABLE userPreferences
         ON UPDATE cascade ON DELETE RESTRICT
 );
 
-insert into users (UserID, Name, Email) values
+insert into users (UserID, FullName, Email) values
 (1, 'Margaret Furmage', 'mfurmage0@va.gov'),
 (2, 'Justus Praill', 'jpraill1@wp.com'),
 (3, 'Benito Mahaffey', 'bmahaffey2@samsung.com'),
@@ -924,3 +924,9 @@ SELECT * FROM musicFile WHERE UserID = 1 AND Artist LIKE '%LeBonBon%';
 SELECT * FROM musicFile WHERE UserID = 1 AND Genre LIKE '%Happy%';
 
 SELECT * FROM musicFile WHERE UserID = 1 AND `Key` = 1;
+
+
+
+SELECT * FROM playlist JOIN playlistOwnership pO on playlist.PlaylistID = pO.PlaylistID join users u on pO.UserID = u.UserID;
+
+SELECT UserID From users where FullName='Giffy Melwall';
