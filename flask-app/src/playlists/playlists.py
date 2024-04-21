@@ -17,8 +17,8 @@ def create_playlist():
     data = request.get_json()
     cursor = db.get_db().cursor()
 
-    query = "INSERT INTO playlist (PlaylistID, Name, Description, CreationDate) VALUES (%s, %s, %s, %s, %s)"
-    cursor.execute(query, (data['PlaylistID'], data['Name'], data['Description'], data['CreationDate']))
+    query = "INSERT INTO playlist (PlaylistID, Name, Description) VALUES (%s, %s, %s)"
+    cursor.execute(query, (data['PlaylistID'], data['Name'], data['Description']))
     db.get_db().commit()
     return make_response(jsonify({"message": "Playlist created!"}))
 
@@ -319,3 +319,25 @@ def add_playlist_chart():
     db.get_db().commit()
     
     return make_response(jsonify({"message": "PlaylistAddede added!"}))
+
+@playlist.route('/playlistsongs', methods=['GET'])
+def get_songs_in_playlist():
+
+    # collecting data from the request object 
+    the_data = request.json
+    current_app.logger.info(the_data)
+
+    #extracting the variable
+    PlaylistID = the_data['PlaylistID']
+
+    cursor = db.get_db().cursor()    
+    cursor.execute("SELECT mF.MusicFileID, title, artist, genre, `key`, tempo, ReleaseStatus, userid FROM playlist p join playlistSong pS on p.PlaylistID = pS.PlaylistID join musicFile mF on pS.MusicFileID = mF.MusicFileID WHERE p.PlaylistID = '" + str(PlaylistID) + "'")
+    row_headers = [x[0] for x in cursor.description]
+    json_data = []
+    theData = cursor.fetchall()
+    for row in theData:
+        json_data.append(dict(zip(row_headers, row)))
+    the_response = make_response(jsonify(json_data))
+    the_response.status_code = 200
+    the_response.mimetype = 'application/json'
+    return the_response

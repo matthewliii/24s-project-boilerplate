@@ -930,3 +930,7 @@ SELECT * FROM musicFile WHERE UserID = 1 AND `Key` = 1;
 SELECT * FROM playlist JOIN playlistOwnership pO on playlist.PlaylistID = pO.PlaylistID join users u on pO.UserID = u.UserID;
 
 SELECT UserID From users where FullName='Giffy Melwall';
+
+SELECT * FROM musicFile WHERE UserID = 1;
+
+SELECT * FROM playlist WHERE PlaylistID = 72;
